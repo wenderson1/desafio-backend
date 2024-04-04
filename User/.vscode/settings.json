@@ -1,0 +1,6 @@
+{
+  "files.exclude": {
+    "User.Application\\bin": true,
+    "User.Application\\obj": true
+  }
+}
