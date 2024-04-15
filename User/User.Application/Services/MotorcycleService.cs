@@ -1,30 +1,34 @@
-﻿using System.Collections.Immutable;
+﻿using System.IO.Pipes;
 using User.Application.Interfaces;
 using User.Application.Models.InputModels;
 using User.Application.Models.Output;
 using User.Core.Entities;
+using User.Core.Enums;
 using User.Core.Repositories;
+using User.Infrastructure.MessageBus;
 
 namespace User.Application.Services
 {
     public class MotorcycleService : IMotorcycleService
     {
         private readonly IMotorcycleRepository _motorcycleRepository;
-        private readonly IHistoricRepository _historyRepository;
-        private readonly IDeliveryManRepository _deliveryManRepository;
+        private readonly IMessageBusClient _messageBus;       
+        private readonly string _exchange = "motorcycle-service";
+        private readonly string _routingKey = "available-motorcycles";
 
         public MotorcycleService(IMotorcycleRepository motorcycleRepository
                                 , IHistoricRepository historicRepository
-                                , IDeliveryManRepository deliveryManRepository)
+                                , IDeliveryManRepository deliveryManRepository
+                                , IMessageBusClient messageBusClient)
         {
             _motorcycleRepository = motorcycleRepository;
-            _historyRepository = historicRepository;
-            _deliveryManRepository = deliveryManRepository;
+            _messageBus = messageBusClient;
         }
 
         public async Task CreateMotorcycleAsync(MotorcycleInput input)
         {
-            await _motorcycleRepository.AddAsync(new Motorcycle(Guid.NewGuid().ToString(),input.Year, input.Model, input.LicensePlate));
+            await _motorcycleRepository.AddAsync(new Motorcycle(Guid.NewGuid().ToString(),input.Year, input.Model, input.LicensePlate, 0));
+            PublishAvailableMotorcycles();
         }
 
         public async Task DeleteMotorcycleAsync(string licensePlate)
@@ -48,27 +52,28 @@ namespace User.Application.Services
 
             MotorcycleDetailsOutput? motorcycleDetails = new MotorcycleDetailsOutput(motorcycle.Id, motorcycle.Year, motorcycle.Model, motorcycle.LicensePlate);
 
-            if (motorcycle.IdHistoric != null)
-            {
-                var historics = await _historyRepository.GetMotorcycleHistoricsAsync(motorcycle.IdHistoric);
-                var historicList = historics.Select(h => new HistoricOutput(h.Id, h.WithdrawalDate, h.ReturnDate)).ToList();
-
-                for (int i = 0; i <= historics.Count() - 1; i++)
-                {
-                    historicList[i].DeliveryMan = await _deliveryManRepository.GetDeliveryManHistoricAsync(historics.ElementAt(i).IdDeliveryMan);
-                }
-
-                motorcycleDetails.Historic.AddRange(historicList);
-            }
-
             return motorcycleDetails;
         }
 
         public async Task UpdateMotorcycleAsync(MotorcycleDetailsOutput input, MotorcycleInput motorcycle, string wrongLicensePlate)
         {
-            var motorcycleUpdated = new Motorcycle(input.Id, motorcycle.Year, motorcycle.Model, motorcycle.LicensePlate);
+            var motorcycleUpdate = new Motorcycle(input.Id, motorcycle.Year, motorcycle.Model, motorcycle.LicensePlate, 0);
+            await _motorcycleRepository.UpdateAsync(motorcycleUpdate, wrongLicensePlate);
+            PublishAvailableMotorcycles();
+        }
 
-            await _motorcycleRepository.UpdateAsync(motorcycleUpdated, wrongLicensePlate);
+        public async Task UpdateAvailabilityMotorcycle(string id, MotorcycleStatusEnum statusEnum)
+        {
+           await _motorcycleRepository.UpdateAvailabilityMotorcycle(id, statusEnum);
+           PublishAvailableMotorcycles();
+        }
+
+        public async void PublishAvailableMotorcycles()
+        {
+            var motorcycles = (await _motorcycleRepository.GetAllAsync())
+                                                          .Where(m => m.Status == MotorcycleStatusEnum.Available);
+
+            _messageBus.Publish(motorcycles, _routingKey, _exchange);
         }
     }
 }

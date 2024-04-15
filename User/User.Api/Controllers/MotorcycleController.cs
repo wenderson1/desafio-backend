@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver.GeoJsonObjectModel;
 using User.Application.Interfaces;
 using User.Application.Models.InputModels;
 using User.Core.Entities;
@@ -51,7 +52,7 @@ namespace User.Api.Controllers
         {
             var result = await _service.GetMotorcyclesByLicensePlateAsync(wrongLicensePlate);
 
-            if (result == null) return NotFound("Motorcycle Not Found");
+            if (result == null) return NotFound("Motorcycle Not Found.");
 
             await _service.UpdateMotorcycleAsync(result, motorcycle, wrongLicensePlate);
 
@@ -63,7 +64,9 @@ namespace User.Api.Controllers
         {
             var result = await _service.GetMotorcyclesByLicensePlateAsync(licensePlate);
 
-            if (result == null) return NotFound("Motorcycle Not Found");
+            if (result == null) return NotFound("Motorcycle Not Found.");
+
+            if (result.Historic != null) return BadRequest("Motorcycle has historic rental.");
 
             await _service.DeleteMotorcycleAsync(licensePlate);
 

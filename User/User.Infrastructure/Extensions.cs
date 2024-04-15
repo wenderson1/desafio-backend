@@ -2,7 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using RabbitMQ.Client;
 using User.Core.Repositories;
+using User.Infrastructure.MessageBus;
 using User.Infrastructure.Persistence;
 using User.Infrastructure.Persistence.Repositories;
 
@@ -47,6 +49,21 @@ namespace User.Infrastructure
             services.AddScoped<IMotorcycleRepository, MotorcycleRepository>();
             services.AddScoped<IHistoricRepository, HistoricRepository>();
             services.AddScoped<IDeliveryManRepository, DeliveryManRepository>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddRabbitMq(this IServiceCollection services)
+        {
+            var connectionFactory = new ConnectionFactory
+            {
+                HostName = "localhost",
+            };
+
+            var connection = connectionFactory.CreateConnection("motorcycle-service-producer");
+
+            services.AddSingleton(new ProducerConnection(connection));
+            services.AddSingleton<IMessageBusClient, RabbitMqClient>();
 
             return services;
         }

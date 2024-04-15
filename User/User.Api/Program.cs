@@ -7,7 +7,8 @@ using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMongo()
+builder.Services.AddRabbitMq()
+                .AddMongo()
                 .AddRepositories()
                 .AddServices();
 

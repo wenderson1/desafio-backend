@@ -1,4 +1,5 @@
 ﻿using User.Core.Entities;
+using User.Core.Enums;
 
 namespace User.Core.Repositories
 {
@@ -9,5 +10,6 @@ namespace User.Core.Repositories
         Task AddAsync(Motorcycle motorcycle);
         Task UpdateAsync(Motorcycle newLicensePlate, string wrongLicensePlate);
         Task DeleteAsync(string licensePlate);
+        Task UpdateAvailabilityMotorcycle(string id, MotorcycleStatusEnum statusEnum);
     }
 }

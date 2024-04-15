@@ -9,19 +9,10 @@ namespace User.Core.Entities
 {
     public class Historic
     {
-        public string Id { get; private set; }
-        public DateTime WithdrawalDate { get; private set; }
-        public DateTime ReturnDate { get; private set; }
-        public DateTime ExpectedReturnDate { get; private set; }
-        public string IdDeliveryMan { get; private set; }
-
-        public Historic( DateTime withdrawalDate, DateTime returnDate, string idDeliveryMan, DateTime expectedReturnDate)
-        {
-            Id = Guid.NewGuid().ToString();
-            WithdrawalDate = withdrawalDate;
-            ReturnDate = returnDate;
-            IdDeliveryMan = idDeliveryMan;
-            ExpectedReturnDate = expectedReturnDate;
-        }
+        public string Id { get; set; }
+        public DateTime WithdrawalDate { get; set; }
+        public DateTime ReturnDate { get; set; }
+        public DateTime ExpectedReturnDate { get; set; }
+        public string IdDeliveryMan { get; set; }
     }
 }
