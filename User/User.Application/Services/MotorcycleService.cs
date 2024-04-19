@@ -34,6 +34,7 @@ namespace User.Application.Services
         public async Task DeleteMotorcycleAsync(string licensePlate)
         {
             await _motorcycleRepository.DeleteAsync(licensePlate);
+            PublishAvailableMotorcycles();
         }
 
 
@@ -41,7 +42,7 @@ namespace User.Application.Services
         {
             var motorcycles = await _motorcycleRepository.GetAllAsync();
 
-            return motorcycles.Select(m => new MotorcycleOutput(m.Id, m.Year, m.Model, m.LicensePlate)).ToList();
+            return motorcycles.Select(m => new MotorcycleOutput(m.Id, m.Year, m.Model, m.LicensePlate, m.Status)).ToList();
         }
 
         public async Task<MotorcycleDetailsOutput?> GetMotorcyclesByLicensePlateAsync(string licensePlate)
@@ -50,7 +51,7 @@ namespace User.Application.Services
 
             if(motorcycle == null) return null;
 
-            MotorcycleDetailsOutput? motorcycleDetails = new MotorcycleDetailsOutput(motorcycle.Id, motorcycle.Year, motorcycle.Model, motorcycle.LicensePlate);
+            MotorcycleDetailsOutput? motorcycleDetails = new MotorcycleDetailsOutput(motorcycle.Id, motorcycle.Year, motorcycle.Model, motorcycle.LicensePlate, motorcycle.Status);
 
             return motorcycleDetails;
         }

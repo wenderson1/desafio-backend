@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using RentalCompany.Application.Models.Input;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RentalCompany.Application.Validators
 {
@@ -17,8 +18,9 @@ namespace RentalCompany.Application.Validators
                 .NotEmpty()
                 .NotNull()
                 .Must(BeValidDate)
-                .WithMessage("Expected Return Date must be today or after.");
-
+                .WithMessage("Expected Return Date must be today or after.")
+                .GreaterThanOrEqualTo(x => x.StartDate)
+                .WithMessage("Expected Return Date must be after or equal to Start Date");
 
             RuleFor(x => x.IdDeliveryMan)
                 .NotEmpty()
@@ -32,7 +34,7 @@ namespace RentalCompany.Application.Validators
         }
         private bool BeValidDate(DateTime date)
         {
-            return date >= (DateTime.Today);
+            return date >= DateTime.Today;
         }
     }
 }

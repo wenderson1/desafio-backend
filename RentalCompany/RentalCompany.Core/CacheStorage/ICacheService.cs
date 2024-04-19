@@ -5,7 +5,8 @@ namespace RentalCompany.Core.CacheStorage
 {
     public interface ICacheService
     {
-        void SetCache(string key, List<Motorcycle> data);
+        void SetCache(List<Motorcycle> data);
         List<Motorcycle> GetMotorcycleList();
+        void Remove(string key);
     }
 }

@@ -4,16 +4,17 @@ using RentalCompany.Api.Filter;
 using RentalCompany.Application.Validators;
 using RentalCompany.Infrastructure;
 using RentalCompany.Application;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddRabbitMq()
+builder.Services.AddServices()
+                .AddRabbitMq()
                 .AddMongo()
                 .AddCache()
                 .AddSubscriber()
-                .AddRepositories()
-                .AddServices();
+                .AddRepositories();
 
 builder.Services.AddControllers(options => options.Filters.Add(typeof(ValidationFilter)));
 

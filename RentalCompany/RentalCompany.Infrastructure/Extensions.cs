@@ -51,7 +51,7 @@ namespace RentalCompany.Infrastructure
             //services.AddScoped<IMotorcycleRepository, MotorcycleRepository>();
             //services.AddScoped<IHistoricRepository, HistoricRepository>();
             services.AddScoped<IDeliveryManRepository, DeliveryManRepository>();
-
+            services.AddScoped<IOrderRepository, OrderRepository>();
             return services;
         }
 

@@ -2,6 +2,7 @@
 using System.Text;
 using User.Application.Interfaces;
 using User.Application.Services;
+using User.Application.Subscriber;
 
 namespace User.Application
 {
@@ -10,6 +11,14 @@ namespace User.Application
         public static IServiceCollection AddServices(this IServiceCollection services)
         {
            services.AddScoped<IMotorcycleService, MotorcycleService>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddSubscriber(this IServiceCollection services)
+        {
+            services.AddHostedService<UpdateUsedMotorcycleSubscriber>();
+            services.AddHostedService<UpdateReturnMotorcycleSubscriber>();
 
             return services;
         }

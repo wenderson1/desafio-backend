@@ -68,7 +68,7 @@ namespace RentalCompany.Application.Services
 
         public byte[] GetLocalImage(string cnhNumber)
         {
-            var imagePath = @"{ _basePath }{ cnhNumber}";
+            var imagePath = $"{_basePath}{cnhNumber}";
 
             if (File.Exists($"{imagePath}.png"))
             {

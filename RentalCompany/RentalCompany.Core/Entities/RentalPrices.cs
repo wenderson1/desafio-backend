@@ -38,7 +38,7 @@ namespace RentalCompany.Core.Entities
             if (totalDays >= 30 && totalDays < 45)
                 return (30 * ThirtyDays) + ((totalDays - 30) * AdditionalDaily);
 
-            if (totalDays >= 50 && totalDays < 50)
+            if (totalDays >= 50)
                 return (50 * FiftyDays) + ((totalDays - 50) * AdditionalDaily);
 
             return 0.00;

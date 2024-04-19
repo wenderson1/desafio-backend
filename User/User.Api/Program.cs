@@ -10,7 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRabbitMq()
                 .AddMongo()
                 .AddRepositories()
-                .AddServices();
+                .AddServices()
+                .AddSubscriber();
 
 builder.Services.AddControllers(options => options.Filters.Add(typeof(ValidationFilter)));
 

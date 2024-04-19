@@ -3,8 +3,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using RentalCompany.Core.CacheStorage;
 using RentalCompany.Core.Entities;
-using System.Runtime.Caching;
-using MemoryCache = Microsoft.Extensions.Caching.Memory.MemoryCache;
 
 namespace RentalCompany.Infrastructure.CacheStorage
 {
@@ -27,9 +25,15 @@ namespace RentalCompany.Infrastructure.CacheStorage
             return result;
         }
 
-        public void SetCache(string key, List<Motorcycle> data)
+        public void SetCache(List<Motorcycle> data)
         {
-            _cache.Set(key, data);
+            _cache.Remove(_cacheKey);
+            _cache.Set(_cacheKey, data);
+        }
+
+        public void Remove(string key)
+        {
+            _cache.Remove(key);
         }
     }
 }

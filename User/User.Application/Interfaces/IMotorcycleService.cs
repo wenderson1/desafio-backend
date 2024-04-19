@@ -12,5 +12,6 @@ namespace User.Application.Interfaces
         Task UpdateMotorcycleAsync(MotorcycleDetailsOutput result, MotorcycleInput motorcycle, string wrongLicensePlate);
         Task DeleteMotorcycleAsync(string licensePlate);
         Task<List<MotorcycleOutput>> GetAllAsync();
+        Task UpdateAvailabilityMotorcycle(string id, MotorcycleStatusEnum statusEnum);
     }
 }

@@ -7,14 +7,12 @@ using RentalCompany.Core.CacheStorage;
 using RentalCompany.Core.Entities;
 using System.Data;
 using System.Text;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks.Dataflow;
+
 
 namespace RentalCompany.Application.Subscriber
 {
     public class MotorcyclesAvailablesSubscriber : BackgroundService
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly IConnection _connection;
         private readonly IModel _channel;
         private readonly ICacheService _cacheService;
@@ -22,9 +20,8 @@ namespace RentalCompany.Application.Subscriber
         private const string Exchange = "motorcycle-service";
         private const string RoutingKey = "available-motorcycles";
 
-        public MotorcyclesAvailablesSubscriber(IServiceProvider serviceProvider, ICacheService cacheService)
+        public MotorcyclesAvailablesSubscriber(ICacheService cacheService)
         {
-            _serviceProvider = serviceProvider;
             _cacheService = cacheService;
 
             var connectionFactory = new ConnectionFactory
@@ -55,7 +52,7 @@ namespace RentalCompany.Application.Subscriber
 
                 Console.WriteLine($"Availables Motorcycles received, Count: {message.Count()}");
 
-                _cacheService.SetCache("MotorcycleList", message);
+                _cacheService.SetCache(message);
 
                 _channel.BasicAck(eventArgs.DeliveryTag, false);
 

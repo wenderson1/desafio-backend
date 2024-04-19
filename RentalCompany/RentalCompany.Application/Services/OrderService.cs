@@ -5,6 +5,7 @@ using RentalCompany.Core.CacheStorage;
 using RentalCompany.Core.Entities;
 using RentalCompany.Core.Enums;
 using RentalCompany.Core.Repositories;
+using RentalCompany.Infrastructure.MessageBus;
 using System.Data;
 
 namespace RentalCompany.Application.Services
@@ -13,10 +14,15 @@ namespace RentalCompany.Application.Services
     {
         private readonly ICacheService _cache;
         private readonly IOrderRepository _repository;
-        public OrderService(ICacheService cache, IOrderRepository repository)
+        private readonly IMessageBusClient _messageBus;
+        private readonly string _exchange = "order-service";
+
+
+        public OrderService(ICacheService cache, IOrderRepository repository, IMessageBusClient client)
         {
             _cache = cache;
             _repository = repository;
+            _messageBus = client;
         }
 
         public async Task<CreateOrderOutput> CreateOrder(CreateOrderInput input)
@@ -27,13 +33,18 @@ namespace RentalCompany.Application.Services
                 ExpectedReturnDate = input.ExpectedReturnDate,
                 Price = RentalPrices.CalculateTotalAmountWithoutPenalty(input.StartDate, input.ExpectedReturnDate)
             };
-
             var order = new Order(input.IdDeliveryMan, input.IdMotorcycle, OrderStatusEnum.Created, input.StartDate, input.ExpectedReturnDate, null, orderOutput.Price);
+            
+            var deliveryManOrder = await GetById(order.Id);
 
-            //publicar mensagem na Fila para alterar Status
+            if (deliveryManOrder.Status == OrderStatusEnum.Created)
+                throw new Exception("This delivery man already has a active order.");
+
+            PublishUsedMotorcycle(input.IdMotorcycle);
 
             await _repository.AddAsync(order);
 
+            orderOutput.Id = order.Id;
             return orderOutput;
         }
 
@@ -41,11 +52,17 @@ namespace RentalCompany.Application.Services
         {
             var result = await _repository.GetById(id);
 
-            if (result.ExpectedReturnDate < DateTime.Now) result.ReturnDate = result.ExpectedReturnDate;
+            if (result.StartDate < DateTime.Now)
+                throw new Exception("Cannot finish the order when it's not start.");
+
+            if (result.ExpectedReturnDate < DateTime.Now) 
+                result.ReturnDate = result.ExpectedReturnDate;
 
             result.Status = OrderStatusEnum.Finished;
             result.Price = RentalPrices.CalculateTotalAmountWithPenalty(result.StartDate, result.ExpectedReturnDate, result.ReturnDate ?? DateTime.Now);
             result.ReturnDate = DateTime.Now.Date;
+
+            PublishReturnedMotorcycle(result.IdMotorcycle);
 
             await _repository.UpdateAsync(result);
 
@@ -125,6 +142,16 @@ namespace RentalCompany.Application.Services
                 StartDate = input.StartDate,
                 ExpectedReturnDate = input.ExpectedReturnDate
             };
+        }
+
+        public void PublishUsedMotorcycle(string idMotorcycle)
+        {
+            _messageBus.Publish(idMotorcycle, "used-motorcycle", _exchange);
+        }
+
+        public void PublishReturnedMotorcycle(string idMotorcycle)
+        {
+            _messageBus.Publish(idMotorcycle, "returned-motorcycle", _exchange);
         }
     }
 }

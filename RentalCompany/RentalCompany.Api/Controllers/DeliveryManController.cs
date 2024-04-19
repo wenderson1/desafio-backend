@@ -16,8 +16,14 @@ namespace RentalCompany.Api.Controllers
             _deliveryManService = deliveryManService;
         }
 
+        /// <summary>
+        /// Create a new DeliveryMan
+        /// </summary>
+        /// <param name="input">Delivery Man Fields</param>
+        /// <response code="200">Succes</response>
+        /// <response code="400">Bad Request</response>        
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]DeliveryManInput input)
+        public async Task<IActionResult> Post([FromBody] DeliveryManInput input)
         {
             var result = await _deliveryManService.GetByCnhNumber(input.CnhNumber);
 
@@ -28,7 +34,13 @@ namespace RentalCompany.Api.Controllers
             return Ok();
         }
 
-        [HttpPut("cnhNumber")]
+        /// <summary>
+        /// Update a exists Delivery Man
+        /// </summary>
+        /// <param name="input">Delivery Man Fields</param>
+        /// <response code="200">Succes</response>
+        /// <response code="400">Bad Request</response> 
+        [HttpPut("{cnhNumber}")]
         public async Task<IActionResult> Put([FromBody] DeliveryManUpdateInput input, string cnhNumber)
         {
             var result = await _deliveryManService.GetByCnhNumber(cnhNumber);
@@ -40,28 +52,50 @@ namespace RentalCompany.Api.Controllers
             return Ok();
         }
 
-        [HttpPost("cnhNumber")]
+        /// <summary>
+        /// Upload the CNH Image
+        /// </summary>
+        /// <param name="input">CNH Number and CNH IMage</param>
+        /// <response code="200">Succes</response>
+        /// <response code="400">Bad Request</response> 
+        /// <response code="404">Bad Request</response> 
+        [HttpPost("image")]
         public async Task<IActionResult> UploadCnhImage(UploadCnhImageInput input)
         {
+            var result = await _deliveryManService.GetByCnhNumber(input.CnhNumber);
+
+            if (result == null) return NotFound();
 
             await _deliveryManService.UpdateCnhImage(input);
 
             return Ok();
         }
 
-        [HttpDelete("cnhNumber")]
+        /// <summary>
+        /// Delete a Deliveryman
+        /// </summary>
+        /// <param name="cnhNumber">Cnh Number</param>
+        /// <response code="200">Succes</response>
+        /// <response code="404">NotFound</response> 
+
+        [HttpDelete("{cnhNumber}")]
         public async Task<IActionResult> Delete(string cnhNumber)
         {
             var result = await _deliveryManService.GetByCnhNumber(cnhNumber);
 
-            if (result == null) return BadRequest("This CNH Number is not found.");
+            if (result == null) return NotFound();
 
             await _deliveryManService.DeleteAsync(cnhNumber);
 
             return Ok();
         }
-
-        [HttpGet("cnhNumber")]
+        /// <summary>
+        /// Get details of Delivery Man
+        /// </summary>
+        /// <param name="cnhNumber">Cnh Number</param>
+        /// <response code="200">Succes</response>
+        /// <response code="404">NotFound</response>         
+        [HttpGet("{cnhNumber}")]
         public async Task<IActionResult> GetDetailsByCnhNumber(string cnhNumber)
         {
             var result = await _deliveryManService.GetDetailsByCnhNumber(cnhNumber);
